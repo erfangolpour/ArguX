@@ -1,0 +1,9 @@
+fastapi
+aiohttp
+opencv-python
+beautifulsoup4
+uvicorn[standard]
+ultralytics
+celery
+redis
+pydantic-settings

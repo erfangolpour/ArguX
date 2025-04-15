@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@layer base {
+	body {
+		@apply bg-gray-900 font-sans text-gray-100 antialiased;
+		overflow: hidden; /* Keep overflow hidden */
+	}
+
+	/* Define base styles for common elements if needed */
+	h1,
+	h2,
+	h3,
+	h4,
+	h5,
+	h6 {
+		@apply font-semibold text-gray-50;
+	}
+
+	button {
+		@apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900;
+		@apply disabled:cursor-not-allowed disabled:opacity-60;
+	}
+
+	input[type="text"],
+	select {
+		@apply focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none;
+	}
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	@apply h-1.5 w-1.5;
+}
+
+::-webkit-scrollbar-track {
+	@apply rounded-full bg-gray-800/30;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply rounded-full bg-gray-500/60;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-gray-500/80;
+}
+
+/* Style for react-select */
+/* Targeting react-select components via their default class names */
+.css-b62m3t-container, /* Base container */
+.css-13cymxt-control, /* Control (input box) */
+.css-t3ipsp-control, /* Control focused */
+.css-1nmdiq5-menu, /* Menu dropdown */
+.css-1p3d00x-menu /* Menu dropdown */ {
+	/* Ensure react-select uses transparent backgrounds */
+	background-color: transparent !important;
+}
