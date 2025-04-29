@@ -4,29 +4,29 @@ import base64
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Optional, Set, Dict, List, Any
+from random import randint
+from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urlparse
 from uuid import uuid4
-from random import randint
 
 import aiohttp
 import cv2
 import numpy as np
 import redis
 import redis.asyncio as aioredis  # Use async redis client
-from redis.exceptions import RedisError
 from bs4 import BeautifulSoup
 from celery import Celery, states
 from celery.exceptions import CeleryError
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, status, Depends, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, HttpUrl
-from ultralytics import YOLO
-from ultralytics import settings as yolo_ultralytics_settings  # Avoid name clash
+from redis.exceptions import RedisError
 
 # Import settings
 from settings import settings
+from ultralytics import YOLO
+from ultralytics import settings as yolo_ultralytics_settings  # Avoid name clash
 
 # --- Logging Configuration ---
 logging.basicConfig(level=settings.log_level.upper(), format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -833,9 +833,9 @@ async def websocket_result_listener(redis: aioredis.Redis, celery: Celery):
                             tasks_to_remove.remove(task_id)  # Don't remove if not in a final state
 
                 except CeleryError as e:
+                    # Pssobility of retrying later, but for now just log and continue
                     logger.error(f"Celery error checking result for task {task_id}: {e}", exc_info=True)
-                    # Decide whether to remove the task ID or retry later
-                    # tasks_to_remove.add(task_id) # Remove to prevent repeated errors?
+                    tasks_to_remove.add(task_id)  # Remove to prevent repeated errors
                 except Exception as e:
                     logger.error(f"Unexpected error processing task result for {task_id}: {e}", exc_info=True)
                     tasks_to_remove.add(task_id)  # Remove potentially problematic task ID
@@ -876,12 +876,7 @@ async def websocket_endpoint(
     # Start the result listener task if it's not already running (simple check)
     # A more robust approach would use a shared flag or task registry
     listener_task_name = "websocket_result_listener_task"
-    listener_task = None
-    for task in asyncio.all_tasks():
-        if task.get_name() == listener_task_name:
-            listener_task = task
-            break
-
+    listener_task = next((task for task in asyncio.all_tasks() if task.get_name() == listener_task_name), None)
     if listener_task is None or listener_task.done():
         logger.info("No active result listener found, starting new one.")
         asyncio.create_task(websocket_result_listener(redis, celery), name=listener_task_name)
@@ -909,9 +904,3 @@ async def websocket_endpoint(
         # if not connected_clients and listener_task and not listener_task.done():
         #     logger.info("Last client disconnected, stopping result listener.")
         #     listener_task.cancel()
-
-
-# --- Main execution (for running with uvicorn) ---
-# Example: uvicorn main:app --reload --log-level debug
-# Remember to run Celery worker separately:
-# celery -A main.celery_app worker --loglevel=info

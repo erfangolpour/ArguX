@@ -34,14 +34,14 @@ class Settings(BaseSettings):
     yolo_base_dir: Path = BASE_DIR / "YOLO"
     yolo_weights_dir: str = str(yolo_base_dir)
     yolo_runs_dir: str = str(yolo_base_dir)
-    default_model: str = "yolo11n.pt"  # Changed from yolo11n.pt to yolo11n.pt
+    default_model: str = "yolo11n.pt"
 
     # HTTP Client settings
-    http_client_timeout: int = 5  # Increased default timeout slightly
+    http_client_timeout: int = 5
     http_user_agent: str = "Mozilla/5.0 (Windows; U; Windows NT 5.1; de; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5"
 
     # Scan settings
-    max_concurrent_tasks: int = 5  # Max concurrent processing tasks
+    max_concurrent_tasks: int = 5
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
